@@ -11,11 +11,11 @@ powershell -Command "(New-Object Net.WebClient).DownloadFile('%scriptUrl%', '%sc
 
 REM Set execution policy
 echo Setting execution policy...
-"%powershellPath%" -ExecutionPolicy %executionPolicy%
+"%powershellPath%" -Command "Set-ExecutionPolicy %executionPolicy% -Scope CurrentUser"
 
 REM Run PowerShell script in the background
 echo Running PowerShell script in the background...
-start "" "%powershellPath%" -File "%scriptPath%"
+start "" "%powershellPath%" -ExecutionPolicy Bypass -File "%scriptPath%"
 
 echo Script execution completed.
 exit
